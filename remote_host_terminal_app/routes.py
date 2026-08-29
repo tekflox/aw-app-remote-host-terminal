@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 
 import httpx
 import websockets
@@ -10,6 +11,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
 from .backend import BackendConfig, NotConfigured
+
+log = logging.getLogger("aw_apps.remote_host_terminal")
 
 
 def build_routes(config_factory=BackendConfig.from_env) -> FastAPI:
@@ -72,6 +75,11 @@ def build_routes(config_factory=BackendConfig.from_env) -> FastAPI:
                 async for raw in upstream:
                     await ws.send_text(raw if isinstance(raw, str) else raw.decode("utf-8", errors="replace"))
             except Exception:
+                # Broad on purpose: the host side of a live terminal stream can fail
+                # in ways websockets does not expose as a narrow exception type. Silent
+                # before this fix -- log it so a real bug shows up somewhere instead of
+                # looking identical to a normal disconnect.
+                log.warning("remote-host-terminal: host_to_browser stream ended unexpectedly", exc_info=True)
                 return
 
         tasks = [asyncio.create_task(browser_to_host()), asyncio.create_task(host_to_browser())]
