@@ -2,7 +2,7 @@
   "manifest_version": 1,
   "id": "remote-host-terminal",
   "name": "Remote Host Terminal",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Open interactive terminals on every remote host linked to your account, with multiple sessions side by side in one workspace window.",
   "tier": "inprocess",
   "requires_ui_refresh": true,
